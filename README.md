@@ -1,0 +1,80 @@
+# Engineering Showcase
+
+**산업 제어 현장에서의 반복 업무와 레거시 설정 이관 문제를 소프트웨어 도구로 해결한 작업의 실행파일 아카이브입니다.**
+
+이 저장소는 개발 결과물을 확인할 수 있도록 Windows 실행파일을 모아 둔 **포트폴리오용 공개 저장소**입니다. 각 도구의 설계 배경과 검증 과정은 [Woojin_works 기술 기록](https://github.com/whan1569/Woojin_works)에 별도로 정리했습니다.
+
+## 실행파일
+
+| 파일 | 역할 | 다운로드 |
+| --- | --- | --- |
+| **IOForge.exe** | B&R 하드웨어·I/O 구성을 현장에서 편집하고 설정 산출물을 생성하는 일반 작업용 도구 | [IOForge.exe](https://raw.githubusercontent.com/whan1569/Engineering-Showcase/main/IOForge.exe) |
+| **IOForge-Admin-Studio.exe** | 카드·신호·템플릿·Standard 등 기준 데이터를 관리하는 관리자용 도구 | [IOForge-Admin-Studio.exe](https://raw.githubusercontent.com/whan1569/Engineering-Showcase/main/IOForge-Admin-Studio.exe) |
+| **FixMorph.exe** | 구형·신형 모니터의 FIX 데이터 구조를 비교하고 호환 가능한 설정값을 선택적으로 이관하는 도구 | [FixMorph.exe](https://raw.githubusercontent.com/whan1569/Engineering-Showcase/main/FixMorph.exe) |
+
+> 실행파일은 Windows용으로 배포한 결과물입니다. 이 저장소에는 개발 원본 소스와 별도의 운영 프로젝트·장비 데이터가 포함되어 있지 않습니다. 실행 및 현장 적용에는 사용 환경에 맞는 기준 데이터와 검증이 필요할 수 있습니다.
+
+## 01. IOForge — HW/I/O 구성 업무 자동화
+
+### 해결하려는 문제
+
+산업용 장비의 카드·슬롯·채널 구성이 바뀌면 HW 설정, I/O 매핑, PLC 변수와 확인 자료를 함께 수정해야 합니다. 이러한 작업을 여러 파일에서 반복하면 수정 누락과 정보 불일치가 발생하기 쉽습니다.
+
+### 설계와 역할 분담
+
+- **단일 프로젝트 모델:** Controller → POWERLINK Node → Rack → Slot → Module → Channel → Signal 관계를 한곳에서 관리
+- **일관된 출력:** 공통 모델을 기준으로 `ConfigHW.xml`, `ConfigIO.xml`, `IO_info.csv` 생성
+- **Local-first:** 핵심 편집·저장·생성 작업은 로컬에서 수행하고, 공유는 사용자 요청에 따른 Push/Pull로 구분
+- **역할 분리:** 일반 사용자는 장비별 구성을 편집하고, Admin Studio는 카드·신호·템플릿·Standard 기준 데이터를 관리
+- **적용 범위의 제한:** Automation Studio 전체를 대체하지 않으며, 최종 Build 및 실장비 검증은 기존 엔지니어링 절차를 따름
+
+**핵심 판단:** 현장 작업자의 구성 판단과 소프트웨어의 반복 처리 영역을 나눠, 여러 설정 자료를 개별 수정하는 작업을 줄이는 구조를 선택했습니다.
+
+**기술 기록**
+
+- [개발 배경과 개선 효과](https://github.com/whan1569/Woojin_works/blob/main/개발/IOForge/01_개발_배경과_개선_효과.md)
+- [적용 기술과 설계 접근](https://github.com/whan1569/Woojin_works/blob/main/개발/IOForge/02_적용_기술과_설계_접근.md)
+- [설계 의사결정과 품질 확보](https://github.com/whan1569/Woojin_works/blob/main/개발/IOForge/08_설계_의사결정과_품질확보.md)
+
+## 02. FixMorph — 레거시 FIX 설정 이관
+
+### 해결하려는 문제
+
+구형 모니터의 FIX 설정파일은 신형 프로그램과 구조체 구성, 자료형, 신규 필드 또는 체크섬 기준이 다를 수 있습니다. 파일 전체를 그대로 복사하는 방식으로는 설정을 안정적으로 복구할 수 없습니다.
+
+### 변환 원칙
+
+1. **신형 FIX**를 구조 기준으로, **기존 FIX**를 설정값의 출처로 사용합니다.
+2. 전체 필드 경로와 자료형이 일치하는 값만 선택적으로 이관합니다.
+3. 신형 전용 필드·체크섬·HW I/O 매핑 등 보호 영역은 신형 기준을 유지합니다.
+4. 원본 파일을 보존하고, 결과 FIX와 변경·제외 내역을 별도로 출력합니다.
+5. 데이터 구조 차이와 저장 파티션 이상은 구분해 진단하며, 최종 정상 동작은 대상 환경에서 검증합니다.
+
+**핵심 판단:** 과거 설정값의 복원과 신형 데이터 구조의 보존을 구분해, 이관 가능한 값만 다루도록 했습니다.
+
+**기술 기록**
+
+- [개발 배경과 문제 정의](https://github.com/whan1569/Woojin_works/blob/main/개발/FixMorph/01_개발_배경과_문제_정의.md)
+- [변환 원칙](https://github.com/whan1569/Woojin_works/blob/main/개발/FixMorph/02_적용_기술과_변환_원칙.md)
+- [현장 적용과 검증 절차](https://github.com/whan1569/Woojin_works/blob/main/개발/FixMorph/03_현장_적용과_검증_절차.md)
+
+## 실행 및 검토 안내
+
+1. 위 표에서 필요한 `.exe` 파일을 다운로드합니다.
+2. Windows 환경에서 실행합니다. OS 보안 정책에 따라 실행 전 확인이 필요할 수 있습니다.
+3. **실제 장비 데이터가 아닌 복사본·시험 데이터로 먼저 확인**하고, 원본 파일과 작업 이력을 별도로 보존합니다.
+4. 생성된 HW/I/O 설정이나 변환된 FIX를 실제 장비에 반영하려면 담당자의 검토, 적절한 개발 환경의 확인 및 실장비 검증 절차가 필요합니다.
+
+이 저장소는 실행파일을 통한 **개발 결과물 확인**이 목적이며, 범용 설치·운용 지원이나 모든 장비 구성에서의 호환성을 보증하지 않습니다.
+
+## 공개 범위
+
+- 이 저장소: 포트폴리오 검토를 위한 실행파일
+- [Woojin_works](https://github.com/whan1569/Woojin_works): 공개 가능한 범위의 문제 분석, 설계 판단, 개선·검증 기록
+- 비공개 범위: 원본 소스코드, 고객사·설비별 비공개 설정 및 운영 데이터
+
+**공개된 실행파일이라는 이유만으로 재배포·수정·상업적 사용 권한이 별도 부여되는 것은 아닙니다.** 업무용 시스템의 실제 운영이나 타 환경 적용은 관계자의 권한 및 검증 절차를 우선합니다.
+
+---
+
+**Engineering focus:** 문제 정의 → 작업·책임 분리 → 구현 → 현장 검증 → 변경·복구를 고려한 개선
